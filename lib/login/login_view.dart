@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'login_viewmodel.dart';
+import 'package:flutter_app_c4f_mvvm/home/home_view.dart';
+import 'package:provider/provider.dart';
+import 'login_bloc.dart';
 
 class LoginPage extends StatelessWidget {
   @override
@@ -8,7 +10,10 @@ class LoginPage extends StatelessWidget {
       appBar: AppBar(
         title: Text("Login"),
       ),
-      body: BodyWidget(),
+      body: ChangeNotifierProvider(
+        builder: (_) => LoginBloc(),
+        child: BodyWidget(),
+      ),
     );
   }
 }
@@ -22,39 +27,30 @@ class _BodyWidgetState extends State<BodyWidget> {
   final emailController = TextEditingController();
   final passController = TextEditingController();
 
-  final loginViewModel = LoginViewModel();
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
     emailController.addListener(() {
-      loginViewModel.emailSink.add(emailController.text);
+      LoginBloc.of(context).emailSink.add(emailController.text);
     });
 
     passController.addListener(() {
-      loginViewModel.passSink.add(passController.text);
+      LoginBloc.of(context).passSink.add(passController.text);
     });
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-
-    loginViewModel.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    var loginBloc = LoginBloc.of(context);
     return Container(
       padding: EdgeInsets.only(left: 40, right: 40),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           StreamBuilder<String>(
-              stream: loginViewModel.emailStream,
+              stream: loginBloc.emailStream,
               builder: (context, snapshot) {
                 return TextFormField(
                   controller: emailController,
@@ -70,7 +66,7 @@ class _BodyWidgetState extends State<BodyWidget> {
             height: 20,
           ),
           StreamBuilder<String>(
-              stream: loginViewModel.passStream,
+              stream: loginBloc.passStream,
               builder: (context, snapshot) {
                 return TextFormField(
                   controller: passController,
@@ -89,7 +85,7 @@ class _BodyWidgetState extends State<BodyWidget> {
             width: 200,
             height: 45,
             child: StreamBuilder<bool>(
-                stream: loginViewModel.btnStream,
+                stream: loginBloc.btnStream,
                 builder: (context, snapshot) {
                   return RaisedButton(
                     color: Colors.blue,
@@ -97,8 +93,11 @@ class _BodyWidgetState extends State<BodyWidget> {
                         borderRadius: BorderRadius.circular(10)),
                     onPressed: snapshot.data == true
                         ? () {
-                            // call login api
-                            print("call login api");
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HomePage()),
+                            );
                           }
                         : null,
                     child: Text(
